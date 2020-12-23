@@ -50,11 +50,12 @@ class TRAMZ:
             return
         reactor = self.printer.get_reactor()
         toolhead = self.printer.lookup_object('toolhead')
+        idle_timeout = self.printer.lookup_object('idle_timeout')
         z_tmc2130 = self.printer.lookup_object('tmc2130 stepper_z')
         rc, hc, homing_cur = z_tmc2130.get_current()
         event_time = reactor.monotonic()
-        status = toolhead.get_status(event_time)
-        if status['status'] == "Printing":
+        status = idle_timeout.get_status(event_time)
+        if status['state'] == "Printing":
             gcmd.respond_info("Cannot Tram during a print, aborting")
             return
         if self.tmc_z_endstop is None:
