@@ -187,3 +187,15 @@ pat9125_task(void)
     }
 }
 DECL_TASK(pat9125_task);
+
+void
+pat9125_shutdown(void)
+{
+    uint8_t oid;
+    struct pat9125_i2c *p;
+    foreach_oid(oid, p, command_config_pat9125) {
+        sched_del_timer(&p->time);
+        p->flags &= ~FLAG_UPDATING;
+    }
+}
+DECL_SHUTDOWN(pat9125_shutdown);

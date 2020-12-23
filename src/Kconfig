@@ -131,7 +131,7 @@ config HAVE_CHIPID
     bool
     default n
 config HAVE_PAT9125
-    depends on HAVE_GPIO && HAVE_GPIO_I2C
+    depends on HAVE_GPIO_I2C && HAVE_STRICT_TIMING
     bool
     default y
 
