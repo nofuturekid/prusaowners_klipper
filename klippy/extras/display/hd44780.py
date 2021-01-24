@@ -7,6 +7,8 @@
 import logging
 
 BACKGROUND_PRIORITY_CLOCK = 0x7fffffff00000000
+HD44780_PROTOCOL_INIT_DEFAULT = "standard"
+HD44780_PROTOCOL_INIT_OPTIONS = {"standard":"standard", "ldo":"ldo"}
 LINE_LENGTH_DEFAULT="20"
 LINE_LENGTH_OPTIONS={"16":16, "20":20}
 
@@ -21,6 +23,9 @@ class HD44780:
         ppins = self.printer.lookup_object('pins')
         pins = [ppins.lookup_pin(config.get(name + '_pin'))
                 for name in ['rs', 'e', 'd4', 'd5', 'd6', 'd7']]
+        # LDO OLED needs different protocol init
+        self.hd44780_protocol_init = config.getchoice('hd44780_protocol_init',
+            HD44780_PROTOCOL_INIT_OPTIONS, HD44780_PROTOCOL_INIT_DEFAULT)
         self.line_length = config.getchoice('line_length', LINE_LENGTH_OPTIONS,
             LINE_LENGTH_DEFAULT)
         mcu = None
@@ -89,7 +94,11 @@ class HD44780:
         curtime = self.printer.get_reactor().monotonic()
         print_time = self.mcu.estimated_print_time(curtime)
         # Program 4bit / 2-line mode and then issue 0x02 "Home" command
-        init = [[0x33], [0x33], [0x32], [0x28, 0x28, 0x02]]
+        if self.hd44780_protocol_init == "ldo":
+          # LDO OLED needs different protocol init
+          init = [[0x02]]
+        else:
+          init = [[0x33], [0x33], [0x32], [0x28, 0x28, 0x02]]
         # Reset (set positive direction ; enable display and hide cursor)
         init.append([0x06, 0x0c])
         for i, cmds in enumerate(init):
